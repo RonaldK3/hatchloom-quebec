@@ -9,7 +9,7 @@
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/matt-tsogt/hatchloom.git
+   git clone https://github.com/RonaldK3/hatchloom-quebec.git
    cd hatchloom
    ```
 
