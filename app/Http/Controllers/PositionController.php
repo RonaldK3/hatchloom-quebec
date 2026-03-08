@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Position;
+use Illuminate\Http\Request;
+
+class PositionController extends Controller
+{
+    public function index($sideHustleId)
+    {
+        $positions = Position::where('side_hustle_id', $sideHustleId)->get();
+        return response()->json($positions);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'side_hustle_id' => 'required|uuid',
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'status' => 'required|string',
+        ]);
+
+        $position = Position::create($data);
+        return response()->json($position, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $position = Position::findOrFail($id);
+
+        $data = $request->validate([
+            'title' => 'sometimes|required|string',
+            'description' => 'sometimes|nullable|string',
+            'status' => 'sometimes|required|string',
+        ]);
+
+        $position->update($data);
+        return response()->json($position);
+    }
+}

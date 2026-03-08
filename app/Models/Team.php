@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Team extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'side_hustle_id',
+        'createdAt'
+    ];
+
+    public function sideHustle()
+    {
+        return $this->belongsTo(SideHustle::class);
+    }
+
+    public function members()
+    {
+        return $this->hasMany(TeamMember::class);
+    }
+}

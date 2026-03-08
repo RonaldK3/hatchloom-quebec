@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\SideHustle;
+use App\Models\BusinessModelCanvas;
+use App\Models\Team;
+use App\Models\Sandbox;
+use Illuminate\Validation\Rule;
+
+class SideHustleController extends Controller
+{
+
+    public function index(Request $request)
+    {
+        $query = SideHustle::query();
+
+        if ($request->has('student_id')) {
+            $query->where('student_id', $request->student_id);
+        }
+
+        return response()->json($query->with(['bmc', 'team', 'positions'])->get());
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|uuid',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $sideHustle = SideHustle::create(array_merge($validated, [
+            'status' => 'IN_THE_LAB',
+        ]));
+
+        $sideHustle->bmc()->create([]);
+        $sideHustle->team()->create([]);
+
+        return response()->json($sideHustle->load(['bmc', 'team', 'positions']), 201);
+    }
+
+    public function createFromSandbox($sandboxId)
+    {
+        $sandbox = Sandbox::findOrFail($sandboxId);
+
+        $sideHustle = SideHustle::create([
+            'sandbox_id' => $sandbox->id,
+            'student_id' => $sandbox->student_id,
+            'title' => $sandbox->title,
+            'description' => $sandbox->description,
+            'status' => 'IN_THE_LAB',
+        ]);
+
+        $sideHustle->bmc()->create([]);
+        $sideHustle->team()->create([]);
+
+        return response()->json($sideHustle->load(['bmc', 'team', 'positions']), 201);
+    }
+
+    public function show($id)
+    {
+        $sideHustle = SideHustle::with(['bmc', 'team', 'team.members', 'positions'])->findOrFail($id);
+        return response()->json($sideHustle);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $sideHustle = SideHustle::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'status' => ['sometimes', Rule::in(['IN_THE_LAB', 'LIVE_VENTURE'])],
+        ]);
+
+        $sideHustle->update($validated);
+
+        return response()->json($sideHustle->load(['bmc', 'team', 'positions']));
+    }
+
+    public function destroy($id)
+    {
+        $sideHustle = SideHustle::findOrFail($id);
+        $sideHustle->delete();
+
+        return response()->json(['message' => 'SideHustle deleted successfully']);
+    }
+}
